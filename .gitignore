@@ -1,18 +1,191 @@
-# Build and Release Folders
-bin-debug/
-bin-release/
-[Oo]bj/
-[Bb]in/
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA: O Futuro em Nossas Mãos</title>
+<style>
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(135deg,#0b1026,#172554,#111827);
+    color:#fff; min-height:100vh; display:flex; justify-content:center; align-items:center;
+    padding:20px;
+  }
+  .game{width:min(900px,100%); background:rgba(17,24,39,.94); border-radius:24px;
+    padding:30px; box-shadow:0 20px 60px rgba(0,0,0,.4)}
+  .screen{display:none}.active{display:block}
+  h1{font-size:clamp(30px,6vw,54px); margin:10px 0}
+  h2{font-size:28px}
+  p{font-size:18px; line-height:1.6; color:#dbeafe}
+  .robot{font-size:70px}
+  .intro{text-align:center}
+  .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0}
+  .topic{background:#1e293b;padding:16px;border-radius:14px;text-align:center}
+  button{border:0;border-radius:14px;padding:14px 22px;font-size:17px;font-weight:bold;cursor:pointer}
+  .start{background:#38bdf8;color:#082f49;margin-top:10px}
+  .answers{display:grid;gap:12px;margin-top:22px}
+  .answer{background:#334155;color:white;text-align:left}
+  .answer:hover{background:#475569}
+  .answer.correct{background:#166534}
+  .answer.wrong{background:#991b1b}
+  .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#bae6fd}
+  .progress{height:10px;background:#334155;border-radius:20px;overflow:hidden;margin:15px 0 25px}
+  .bar{height:100%;background:#38bdf8;width:0;transition:.3s}
+  #feedback{min-height:28px;font-weight:bold;margin-top:16px}
+  .next{background:#e2e8f0;color:#0f172a;margin-top:15px;display:none}
+  .score{font-size:42px;font-weight:bold;color:#38bdf8}
+  .restart{background:#38bdf8;color:#082f49}
+  .small{font-size:15px;color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="game">
+  <section id="home" class="screen active intro">
+    <div class="robot">🤖</div>
+    <h1>IA: O Futuro em Nossas Mãos</h1>
+    <p>Descubra como a Inteligência Artificial pode ajudar a humanidade a enfrentar grandes desafios, acelerar descobertas científicas e transformar a maneira como trabalhamos.</p>
 
-# Other files and folders
-.settings/
+    <h2>🔎 Temas que podem aparecer</h2>
+    <div class="topics">
+      <div class="topic">🧬 Novos tratamentos</div>
+      <div class="topic">💉 Vacinas</div>
+      <div class="topic">☀️ Fusão nuclear</div>
+      <div class="topic">➗ Matemática</div>
+      <div class="topic">🏢 Administração</div>
+      <div class="topic">🔬 Ciência e descobertas</div>
+    </div>
 
-# Executables
-*.swf
-*.air
-*.ipa
-*.apk
+    <p class="small">Responda 15 perguntas e descubra quantos benefícios da IA você consegue identificar.</p>
+    <button class="start" onclick="startGame()">▶️ Começar o jogo</button>
+  </section>
 
-# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
-# should NOT be excluded as they contain compiler settings and other important
-# information for Eclipse / Flash Builder.
+  <section id="quiz" class="screen">
+    <div class="top"><span id="counter"></span><span id="scoreTop">Pontuação: 0</span></div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <h2 id="question"></h2>
+    <div class="answers" id="answers"></div>
+    <div id="feedback"></div>
+    <button class="next" id="next" onclick="nextQuestion()">Próxima pergunta →</button>
+  </section>
+
+  <section id="result" class="screen intro">
+    <div class="robot">🏆</div>
+    <h1>Fim do jogo!</h1>
+    <p>Você acertou:</p>
+    <div class="score" id="finalScore"></div>
+    <p id="message"></p>
+    <button class="restart" onclick="startGame()">🔄 Jogar novamente</button>
+  </section>
+</div>
+
+<script>
+const questions = [
+ {q:"Como a IA pode contribuir para encontrar novos tratamentos para doenças que ainda não têm cura?",
+  a:["Analisando grandes quantidades de dados e ajudando pesquisadores a identificar possíveis medicamentos e alvos terapêuticos.","Substituindo todos os médicos automaticamente.","Garantindo que qualquer doença seja curada em poucos dias.","Eliminando a necessidade de testes científicos."], c:0},
+ {q:"De que maneira a IA pode ajudar no desenvolvimento de vacinas?",
+  a:["Ajudando a analisar estruturas biológicas e a identificar candidatos que podem ser estudados pelos pesquisadores.","Produzindo vacinas sem nenhuma etapa de pesquisa.","Tornando os testes clínicos desnecessários.","Garantindo que todas as vacinas funcionem para todas as pessoas."], c:0},
+ {q:"Qual é uma possível contribuição da IA para a pesquisa sobre fusão nuclear?",
+  a:["Otimizar modelos, controlar experimentos e ajudar a analisar condições que favorecem reações de fusão.","Criar energia infinita instantaneamente.","Fazer a fusão acontecer sem equipamentos.","Substituir toda a infraestrutura de uma usina."], c:0},
+ {q:"Como a IA pode ajudar na resolução de problemas matemáticos muito difíceis?",
+  a:["Explorando padrões, verificando conjecturas e auxiliando matemáticos na criação de novas estratégias.","Inventando respostas sem precisar verificar nada.","Eliminando a necessidade de provas matemáticas.","Transformando qualquer problema em uma conta simples."], c:0},
+ {q:"Em uma empresa, qual é um uso positivo da IA?",
+  a:["Analisar dados, prever demandas e apoiar decisões de gestão.","Tomar todas as decisões sem supervisão humana.","Demitir funcionários automaticamente sem análise.","Garantir lucro independentemente do mercado."], c:0},
+ {q:"Qual é uma das maiores vantagens da IA para a ciência?",
+  a:["A capacidade de processar grandes volumes de informações e encontrar padrões com rapidez.","Fazer descobertas sem dados.","Tornar os cientistas desnecessários.","Impedir que novas hipóteses sejam testadas."], c:0},
+ {q:"Como a IA pode contribuir para a descoberta de novos materiais?",
+  a:["Simulando propriedades e ajudando a selecionar materiais promissores para testes reais.","Criando qualquer material fisicamente sem laboratório.","Garantindo que todo material seja barato.","Substituindo completamente os experimentos."], c:0},
+ {q:"Na área da saúde, qual é uma aplicação possível da IA?",
+  a:["Apoiar profissionais na análise de exames e na identificação de padrões relevantes.","Dar diagnósticos infalíveis sem avaliação médica.","Substituir todos os profissionais de saúde.","Escolher tratamentos sem considerar o paciente."], c:0},
+ {q:"Como a IA pode ajudar no combate às mudanças climáticas?",
+  a:["Modelando cenários, otimizando o uso de energia e ajudando a prever fenômenos ambientais.","Impedindo qualquer desastre climático imediatamente.","Eliminando a necessidade de políticas ambientais.","Fazendo a temperatura global cair automaticamente."], c:0},
+ {q:"Qual benefício a IA pode trazer para a agricultura?",
+  a:["Ajudar a prever condições, monitorar plantações e usar recursos como água de forma mais eficiente.","Garantir colheitas perfeitas em qualquer clima.","Eliminar totalmente a necessidade de agricultores.","Fazer chover sobre uma plantação."], c:0},
+ {q:"Por que a IA pode ser útil na exploração espacial?",
+  a:["Porque pode analisar dados de missões e ajudar sistemas a tomar decisões em ambientes muito distantes da Terra.","Porque permite viajar instantaneamente para qualquer planeta.","Porque elimina todos os riscos espaciais.","Porque substitui todas as naves espaciais."], c:0},
+ {q:"Como a IA pode melhorar a administração de empresas?",
+  a:["Automatizando tarefas repetitivas e oferecendo análises que apoiam o planejamento e a tomada de decisões.","Garantindo que nenhuma empresa tenha prejuízo.","Eliminando a necessidade de planejamento.","Fazendo todas as escolhas sem considerar objetivos humanos."], c:0},
+ {q:"O que significa dizer que a IA pode ampliar a capacidade humana?",
+  a:["Ela pode ajudar pessoas a analisar informações, testar ideias e resolver problemas mais rapidamente.","Ela torna as pessoas desnecessárias.","Ela sempre sabe mais que qualquer especialista.","Ela elimina a necessidade de pensamento crítico."], c:0},
+ {q:"Qual é uma possibilidade futura da IA na educação?",
+  a:["Adaptar atividades e explicações às necessidades de aprendizagem de cada estudante.","Dar a mesma resposta para todos os alunos em qualquer situação.","Substituir completamente professores e escolas.","Garantir que todos aprendam no mesmo ritmo."], c:0},
+ {q:"Qual afirmação representa melhor o potencial da IA?",
+  a:["A IA pode ser uma ferramenta poderosa para acelerar descobertas e solucionar problemas, desde que seja usada com responsabilidade e supervisão humana.","A IA resolverá automaticamente todos os problemas do mundo.","A IA não precisa de pessoas para ser utilizada com segurança.","A IA é capaz de prever perfeitamente o futuro."], c:0}
+];
+
+let quiz=[], current=0, score=0, answered=false;
+
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+function startGame(){
+  quiz = questions.map(x=>{
+    const opts=x.a.map((text,i)=>({text,correct:i===x.c}));
+    shuffle(opts);
+    return {q:x.q,opts};
+  });
+  current=0; score=0;
+  show("quiz"); render();
+}
+
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function render(){
+  answered=false;
+  const item=quiz[current];
+  document.getElementById("counter").textContent=`Pergunta ${current+1} de ${quiz.length}`;
+  document.getElementById("scoreTop").textContent=`Pontuação: ${score}`;
+  document.getElementById("bar").style.width=((current)/quiz.length*100)+"%";
+  document.getElementById("question").textContent=item.q;
+  const box=document.getElementById("answers"); box.innerHTML="";
+  item.opts.forEach((opt,i)=>{
+    const b=document.createElement("button");
+    b.className="answer";
+    b.textContent=String.fromCharCode(65+i)+") "+opt.text;
+    b.onclick=()=>answer(i);
+    box.appendChild(b);
+  });
+  document.getElementById("feedback").textContent="";
+  document.getElementById("next").style.display="none";
+}
+
+function answer(i){
+  if(answered) return;
+  answered=true;
+  const buttons=document.querySelectorAll(".answer");
+  const opts=quiz[current].opts;
+  buttons.forEach((b,index)=>{
+    b.disabled=true;
+    if(opts[index].correct) b.classList.add("correct");
+  });
+  if(opts[i].correct){
+    score++;
+    document.getElementById("feedback").textContent="✅ Correto! Ótima resposta.";
+  }else{
+    buttons[i].classList.add("wrong");
+    document.getElementById("feedback").textContent="❌ Não foi dessa vez. A resposta correta está destacada.";
+  }
+  document.getElementById("scoreTop").textContent=`Pontuação: ${score}`;
+  document.getElementById("next").style.display="inline-block";
+}
+
+function nextQuestion(){
+  current++;
+  if(current<quiz.length) render();
+  else finish();
+}
+
+function finish(){
+  document.getElementById("bar").style.width="100%";
+  show("result");
+  document.getElementById("finalScore").textContent=`${score} / ${quiz.length}`;
+  let msg = score>=13 ? "Excelente! Você reconhece muito bem o potencial da IA. 🚀" :
+            score>=9 ? "Muito bem! Você já conhece vários impactos positivos da IA. 🔬" :
+            "Boa tentativa! Você pode jogar novamente e descobrir ainda mais possibilidades da IA. 💡";
+  document.getElementById("message").textContent=msg;
+}
+</script>
+</body>
+</html>
